@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Mandelbrot Set on Canvas</title>
+</head>
+<body>
+    <script>
+        var WIDTH = 600;
+        var HEIGHT = 600;
+        function setup() {
+            var myCanvas = document.createElement("canvas");
+            myCanvas.width = WIDTH;
+            myCanvas.height = HEIGHT;
+            document.body.appendChild(myCanvas);
+        }
+
+        function get2dCtx() {
+            return document.querySelector("canvas").getContext("2d");
+        }
+
+        // Z = C*C + C // C is the complex number
+        // Z' = Z * Z + C // Z is the previous result and C is the same complex number
+        // Z'' = Z' * Z' + C // and so on.... keep repeating this calculation. check if Z'' after 10-20 calculations is smaller than a number like 5
+        // if it is, then it belongs to the mandelbrot set, if not it is not part of the set
+        // C = X + iY
+        // C*C = (X + iY) * (X + iY) = X^2 -Y^2 +2iXY
+
+        function checkIfBelongsToMandelbrotSet(x, y) {
+            var realComponentOfResult = x;
+            var imaginaryComponentOfResult = y;
+
+            for (var i = 0; i < 10; i++) {
+                // Calculate the real and imaginary components of the result
+                // separately
+                var tempRealComponent =
+                realComponentOfResult * realComponentOfResult -
+                imaginaryComponentOfResult * imaginaryComponentOfResult +
+                x;
+
+                var tempImaginaryComponent =
+                2 * realComponentOfResult * imaginaryComponentOfResult + y;
+
+                realComponentOfResult = tempRealComponent;
+                imaginaryComponentOfResult = tempImaginaryComponent;
+            }
+
+            if (realComponentOfResult * imaginaryComponentOfResult < 5) return true; // In the Mandelbrot set
+            return false; // Not in the set
+        }
+
+        function render() {
+            var ctx = get2dCtx();
+            var magnificationFactor = 500;
+            var panX = 0;
+            var panY = 0;
+            for (var x = 0; x < WIDTH; x++) {
+                for (var y = 0; y < HEIGHT; y++) {
+                    var belongsToSet = checkIfBelongsToMandelbrotSet(
+                    x / magnificationFactor - panX,
+                    y / magnificationFactor - panY
+                    );
+                    if (belongsToSet) {
+                        ctx.fillRect(x, y, 1, 1); // Draw a black pixel
+                    }
+                }
+            }
+        }
+
+        setup();
+        render();
+    </script>
+</body>
+</html>
