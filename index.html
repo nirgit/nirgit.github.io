@@ -5,10 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Mandelbrot Set on Canvas</title>
+
+    <style>
+        html, body {
+            height: 100%;
+            width: 100%;
+        }
+
+        aside {
+            position: fixed;
+            right: 0;
+            border: 1px solid #444;
+            background: rgba(255, 0, 255, 0.4);
+            padding: 5px;
+            color: white;
+        }
+
+        aside > input {
+            display: block;
+        }
+
+        canvas {
+            display: block;
+            margin: auto;
+        }
+    </style>
 </head>
 <body>
+    <aside>
+        <input id='magnify' type="range" min="10" max="2000" value="250" onchange="render()">Magnify</input>
+        <input id='panx' type="range" min="0" max="4" value="1.7" step="0.05" onchange="render()">Move X</input>
+        <input id='pany' type="range" min="0" max="4" value="1.2" step="0.05" onchange="render()">Move Y</input>
+    </aside>
+
     <script>
-        var WIDTH = 600;
+        var WIDTH = 700;
         var HEIGHT = 600;
         function setup() {
             var myCanvas = document.createElement("canvas");
@@ -31,39 +62,45 @@
         function checkIfBelongsToMandelbrotSet(x, y) {
             var realComponentOfResult = x;
             var imaginaryComponentOfResult = y;
+            const MAX_ITERATIONS = 50;
 
-            for (var i = 0; i < 10; i++) {
+            for (var i = 0; i < MAX_ITERATIONS; i++) {
                 // Calculate the real and imaginary components of the result
                 // separately
-                var tempRealComponent =
-                realComponentOfResult * realComponentOfResult -
-                imaginaryComponentOfResult * imaginaryComponentOfResult +
-                x;
+                var tempRealComponent = realComponentOfResult * realComponentOfResult - imaginaryComponentOfResult * imaginaryComponentOfResult + x;
 
-                var tempImaginaryComponent =
-                2 * realComponentOfResult * imaginaryComponentOfResult + y;
+                var tempImaginaryComponent = 2 * realComponentOfResult * imaginaryComponentOfResult + y;
 
                 realComponentOfResult = tempRealComponent;
                 imaginaryComponentOfResult = tempImaginaryComponent;
-            }
 
-            if (realComponentOfResult * imaginaryComponentOfResult < 5) return true; // In the Mandelbrot set
-            return false; // Not in the set
+                if (realComponentOfResult * imaginaryComponentOfResult > 5) {
+                    return (i / MAX_ITERATIONS) * 100; // Not in the Mandelbrot set, get a sense of how far
+                }
+            }
+            return 0; // in the set
         }
+
+        const getMagnifyingValue = () => document.querySelector('#magnify').value;
+        const getPanXValue = () => document.querySelector('#panx').value;
+        const getPanYValue = () => document.querySelector('#pany').value;
 
         function render() {
             var ctx = get2dCtx();
-            var magnificationFactor = 500;
-            var panX = 0;
-            var panY = 0;
+            var magnificationFactor = getMagnifyingValue();
+            var panX = getPanXValue();
+            var panY = getPanYValue();
             for (var x = 0; x < WIDTH; x++) {
                 for (var y = 0; y < HEIGHT; y++) {
                     var belongsToSet = checkIfBelongsToMandelbrotSet(
                     x / magnificationFactor - panX,
-                    y / magnificationFactor - panY
-                    );
-                    if (belongsToSet) {
+                    y / magnificationFactor - panY);
+                    if (!belongsToSet) {
+                        ctx.fillStyle = '#000';
                         ctx.fillRect(x, y, 1, 1); // Draw a black pixel
+                    } else {
+                        ctx.fillStyle = 'hsl(200, 100%, ' + belongsToSet + '%)';
+                        ctx.fillRect(x,y, 1,1); // Draw a colorful pixel
                     }
                 }
             }
