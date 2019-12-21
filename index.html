@@ -16,23 +16,17 @@
             background-color: black;
         }
 
-        aside {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            border: 1px solid #444;
-            background: rgba(255, 0, 255, 0.4);
-            padding: 5px;
-            color: white;
-        }
-
-        aside > input {
-            display: block;
+        #container {
+            display: grid;
+            grid-template-rows: 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
         }
 
         canvas {
             display: block;
             margin: auto;
+            box-sizing: border-box;
+            border: rgba(255, 0, 255, 0.4) dashed 1px;
         }
 
         header {
@@ -42,6 +36,12 @@
             height: 15vh;
             width: 100%;
             position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 1px solid white;
+            box-sizing: border-box;
+            border-left: none;
+            border-right: none;
         }
 
         #caption {
@@ -52,11 +52,13 @@
             line-height: 15vh;
             font-family: 'Give You Glory', cursive;
             font-size: 6vh;
+            transition: .3s ease all;
         }
 
         #caption:hover {
-            color:rgba(255, 0, 255, 0.4);
             cursor: pointer;
+            color: black;
+            background: white;
         }
 
         a {
@@ -69,34 +71,43 @@
     <header>
         <label id="caption"><a href="https://www.github.com/nirgit" target="_blank">Nir Moav</a></label>
     </header>
-    <aside>
-        <input id='magnify' type="range" min="10" max="2000" value="320" onchange="render()">Magnify</input>
-        <input id='panx' type="range" min="0" max="7" value="3.5" step="0.05" onchange="render()">Move X</input>
-        <input id='pany' type="range" min="0" max="4" value="1.7" step="0.05" onchange="render()">Move Y</input>
-    </aside>
-    <canvas id="mandelbrot"></canvas>
+    <div id="container">
+    </div>
 
     <script>
         var WIDTH = 0;
         var HEIGHT = 0;
 
-        function onResize() {
-            setup();
-            render();
+        var ROWS = 3;
+        var COLS = 4;
+
+        function getRandomCoordinate() {
+            return (Math.random() > .5 ? 1 : -1) * Math.random() * 100;
+        }
+
+        function redraw() {
+            for (var i=0; i < ROWS * COLS; i++) {
+                render(i, getRandomCoordinate(), WIDTH, getRandomCoordinate(), HEIGHT);
+            }
         }
 
         function setup() {
-            var myCanvas = document.querySelector("#mandelbrot");
-            
-            var width = window.document.body.clientWidth;
-            var height = window.document.body.clientHeight;
+            var width = WIDTH = window.document.body.clientWidth;
+            var height = HEIGHT = window.document.body.clientHeight;
 
-            myCanvas.width = WIDTH = width;
-            myCanvas.height = HEIGHT = height;
+            var container = document.querySelector("#container")
+            container.innerHTML = "";
+            for (var i=0; i < ROWS * COLS; i++ ) {
+                var ci = document.createElement('canvas');
+                ci.id = 'mandelbrot-' + i;
+                ci.width = width / COLS;
+                ci.height = height / ROWS;
+                container.append(ci)
+            }
         }
 
-        function get2dCtx() {
-            return document.querySelector("#mandelbrot").getContext("2d");
+        function get2dCtx(i) {
+            return document.querySelector("#mandelbrot-" + i).getContext("2d");
         }
 
         // Z = C*C + C // C is the complex number
@@ -128,17 +139,13 @@
             return 0; // in the set
         }
 
-        const getMagnifyingValue = () => document.querySelector('#magnify').value;
-        const getPanXValue = () => document.querySelector('#panx').value;
-        const getPanYValue = () => document.querySelector('#pany').value;
-
-        function render() {
-            var ctx = get2dCtx();
-            var magnificationFactor = getMagnifyingValue();
-            var panX = getPanXValue();
-            var panY = getPanYValue();
-            for (var x = 0; x < WIDTH; x++) {
-                for (var y = 0; y < HEIGHT; y++) {
+        function render(i, startX, width, startY, height) {
+            var ctx = get2dCtx(i);
+            var magnificationFactor = Math.random() * 1000;
+            var panX = Math.random() * 3;
+            var panY = Math.random() * 3;
+            for (var x = startX; x < startX + width; x++) {
+                for (var y = startY; y < startY + height; y++) {
                     var belongsToSet = checkIfBelongsToMandelbrotSet(
                     x / magnificationFactor - panX,
                     y / magnificationFactor - panY);
@@ -154,8 +161,8 @@
         }
 
         setup();
-        render();
-        window.addEventListener('resize', onResize);
+        redraw();
+        window.addEventListener('resize', redraw);
     </script>
 </body>
 </html>
