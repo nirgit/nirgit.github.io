@@ -75,6 +75,11 @@
     </div>
 
     <script>
+        var worker = new Worker('./mandlebrotww.js')
+        worker.onmessage = ({data}) => {
+            window.requestAnimationFrame(() => renderOnCanvas(data.i, data.map));
+        }
+
         var WIDTH = 0;
         var HEIGHT = 0;
 
@@ -82,27 +87,32 @@
         var COLS = 4;
 
         function getRandomCoordinate() {
-            return (Math.random() > .5 ? 1 : -1) * Math.random() * 100;
+            return Math.floor((Math.random() > .5 ? 1 : -1) * Math.random() * 100);
         }
 
         function redraw() {
             for (var i=0; i < ROWS * COLS; i++) {
-                render(i, getRandomCoordinate(), WIDTH, getRandomCoordinate(), HEIGHT);
+                worker.postMessage({i, 
+                    x: getRandomCoordinate(), 
+                    y: getRandomCoordinate(), 
+                    width: WIDTH, 
+                    height: HEIGHT
+                })
             }
         }
 
         function setup() {
-            var width = WIDTH = window.document.body.clientWidth;
-            var height = HEIGHT = window.document.body.clientHeight;
+            var width = WIDTH = Math.floor(window.document.body.clientWidth / COLS);
+            var height = HEIGHT = Math.floor(window.document.body.clientHeight / ROWS);
 
             var container = document.querySelector("#container")
             container.innerHTML = "";
             for (var i=0; i < ROWS * COLS; i++ ) {
                 var ci = document.createElement('canvas');
                 ci.id = 'mandelbrot-' + i;
-                ci.width = width / COLS;
-                ci.height = height / ROWS;
-                container.append(ci)
+                ci.width = width;
+                ci.height = height;
+                container.append(ci);
             }
         }
 
@@ -110,59 +120,31 @@
             return document.querySelector("#mandelbrot-" + i).getContext("2d");
         }
 
-        // Z = C*C + C // C is the complex number
-        // Z' = Z * Z + C // Z is the previous result and C is the same complex number
-        // Z'' = Z' * Z' + C // and so on.... keep repeating this calculation. check if Z'' after 10-20 calculations is smaller than a number like 5
-        // if it is, then it belongs to the mandelbrot set, if not it is not part of the set
-        // C = X + iY
-        // C*C = (X + iY) * (X + iY) = X^2 -Y^2 +2iXY
-
-        function checkIfBelongsToMandelbrotSet(x, y) {
-            var realComponentOfResult = x;
-            var imaginaryComponentOfResult = y;
-            const MAX_ITERATIONS = 60;
-
-            for (var i = 0; i < MAX_ITERATIONS; i++) {
-                // Calculate the real and imaginary components of the result
-                // separately
-                var tempRealComponent = realComponentOfResult * realComponentOfResult - imaginaryComponentOfResult * imaginaryComponentOfResult + x;
-
-                var tempImaginaryComponent = 2 * realComponentOfResult * imaginaryComponentOfResult + y;
-
-                realComponentOfResult = tempRealComponent;
-                imaginaryComponentOfResult = tempImaginaryComponent;
-
-                if (realComponentOfResult * imaginaryComponentOfResult > 5) {
-                    return (i / MAX_ITERATIONS) * 100; // Not in the Mandelbrot set, get a sense of how far
+        function renderOnCanvas(i, bitmap) {
+            var ctx = get2dCtx(i)
+            for (var i=0; i < WIDTH; i++) {
+                for (var j=0; j < HEIGHT; j++) {
+                    var px = bitmap[i][j]
+                    ctx.fillStyle = px.color
+                    ctx.fillRect(px.x, px.y, 1, 1)
                 }
             }
-            return 0; // in the set
         }
 
-        function render(i, startX, width, startY, height) {
-            var ctx = get2dCtx(i);
-            var magnificationFactor = Math.random() * 1000;
-            var panX = Math.random() * 3;
-            var panY = Math.random() * 3;
-            for (var x = startX; x < startX + width; x++) {
-                for (var y = startY; y < startY + height; y++) {
-                    var belongsToSet = checkIfBelongsToMandelbrotSet(
-                    x / magnificationFactor - panX,
-                    y / magnificationFactor - panY);
-                    if (!belongsToSet) {
-                        ctx.fillStyle = '#000';
-                        ctx.fillRect(x, y, 1, 1); // Draw a black pixel
-                    } else {
-                        ctx.fillStyle = 'hsl(' + (180 + belongsToSet * 1.8) + ', 100%, ' + belongsToSet + '%)';
-                        ctx.fillRect(x,y, 1,1); // Draw a colorful pixel
-                    }
-                }
+        function debounce(func, t) {
+            let timeout = 0
+            return function() {
+                clearTimeout(timeout)
+                timeout = setTimeout(func, t)
             }
         }
 
         setup();
         redraw();
-        window.addEventListener('resize', redraw);
+        window.addEventListener('resize', debounce(() => {
+            setup();
+            redraw();
+        }, 200));
     </script>
 </body>
 </html>
