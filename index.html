@@ -23,7 +23,7 @@
             background-color: black;
         }
 
-        #container {
+        #bg {
             display: grid;
             grid-template-rows: 1fr 1fr 1fr;
             grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -40,7 +40,7 @@
             background-color: rgba(0,0,0,0.7);
             color: white;
             text-align: center;
-            height: 15vh;
+            height: 16vh;
             width: 100%;
             position: absolute;
             top: 50%;
@@ -51,21 +51,45 @@
             border-right: none;
         }
 
-        #caption {
-            width: 400px;
+        .contents {
+            position: relative;
+            transition: .3s ease all;
+            top: 0;
+        }
+
+        @media screen and (min-width: 400px) {
+            header {
+                overflow: hidden;
+            }
+
+            .contents:hover {
+                top: -100%;
+            }
+        }
+
+        .caption {
+            width: 360px;
             height: 100%;
             display: block;
             margin: auto;
-            line-height: 15vh;
+            line-height: calc(16vh - 2px);
             font-family: 'Give You Glory', cursive;
             font-size: 6vh;
-            transition: .3s ease all;
+            position: relative;
         }
 
-        #caption:hover {
-            cursor: pointer;
-            color: black;
-            background: white;
+        .ext-links {
+            width: 360px;
+            height: 100%;
+            margin: auto;
+            line-height: calc(16vh - 2px);
+            position: relative;
+        }
+
+        .ext-item {
+            display: inline-block;
+            padding: 3vh 0;
+            margin: 0 5px;
         }
 
         a {
@@ -83,13 +107,35 @@
             font-family: 'Give You Glory', cursive;
             font-size: 2vh;
         }
+
+        .icon {
+            width: 64px;
+            height: 64px;
+        }
     </style>
 </head>
 <body>
+    <div id="bg"></div>
+
     <header>
-        <label id="caption"><a href="https://www.github.com/nirgit" target="_blank">Nir Moav</a></label>
+        <div class="contents">
+            <label class="caption">Nir Moav</label>
+            <div class="ext-links">
+                <a class="ext-item" href="https://www.github.com/nirgit" target="_blank">
+                    <img class="icon" src="./icons/github.svg" alt="GitHub Account">
+                </a>
+                <a class="ext-item" href="https://twitter.com/NirMoav" target="_blank">
+                    <img class="icon" src="./icons/twitter.svg" alt="Twitter Account">
+                </a>
+                <a class="ext-item" href="https://tech-drum.blogspot.com/" target="_blank">
+                    <img class="icon" src="./icons/blogger.svg" alt="Blog">
+                </a>
+                <a class="ext-item" href="https://linkedin.com/in/nirmoav" target="_blank">
+                    <img class="icon" src="./icons/linkedin.svg" alt="LinkedIn">
+                </a>
+            </div>
+        </div>
     </header>
-    <div id="container"></div>
 
     <footer>
         Mandelbrot sets on Canvas
@@ -126,7 +172,7 @@
             var width = WIDTH = Math.floor(window.document.body.clientWidth / COLS);
             var height = HEIGHT = Math.floor(window.document.body.clientHeight / ROWS);
 
-            var container = document.querySelector("#container")
+            var container = document.querySelector("#bg")
             container.innerHTML = "";
             for (var i=0; i < ROWS * COLS; i++ ) {
                 var ci = document.createElement('canvas');

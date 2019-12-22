@@ -36,9 +36,10 @@ const pixel = (x, y, color) => ({
 
 function computeCanvas(startX, width, startY, height) {
     var map = Array(width).fill(1).map(() => Array(height));
-    var magnificationFactor = Math.random() * 1000;
+    var magnificationFactor = Math.random() * 5000;
     var panX = Math.random() * 3;
     var panY = Math.random() * 3;
+    var colorRange = Math.floor(Math.random() * 180);
     for (var x = startX; x < startX + width; x++) {
         for (var y = startY; y < startY + height; y++) {
             var belongsToSet = checkIfBelongsToMandelbrotSet(
@@ -47,7 +48,7 @@ function computeCanvas(startX, width, startY, height) {
             if (!belongsToSet) {
                 map[x - startX][y - startY] = pixel(x - startX, y - startY, '#000')
             } else {
-                map[x - startX][y - startY] = pixel(x - startX, y - startY, 'hsl(' + (180 + belongsToSet * 1.8) + ', 100%, ' + belongsToSet + '%)')
+                map[x - startX][y - startY] = pixel(x - startX, y - startY, 'hsl(' + (colorRange + belongsToSet * (colorRange / 100)) + ', 100%, ' + belongsToSet + '%)')
             }
         }
     }
