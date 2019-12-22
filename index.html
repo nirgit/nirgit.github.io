@@ -3,9 +3,16 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="keywords" content="Nir Moav, Homepage, Github, Portfolio">
+    <meta name="description" content="Nir Moav Homepage & Github portfolio">
+    <meta property="og:title" content="Nir Moav">
+    <meta property="og:description" content="Nir Moav Homepage & Github portfolio">
+    <meta property="og:url" content="https://nirgit.github.io/">
+    <meta property="og:site_name" content="Nir Moav">
+    <meta property="og:type" content="website">
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <link href="https://fonts.googleapis.com/css?family=Give+You+Glory&display=swap" rel="stylesheet">
-    <title>Mandelbrot Set on Canvas</title>
+    <title>Nir Moav</title>
 
     <style>
         html, body {
@@ -65,14 +72,28 @@
             text-decoration: none;
             color: inherit;
         }
+
+        footer {
+            background-color: rgba(0,0,0,0.7);
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            color: white;
+            padding: 20px;
+            font-family: 'Give You Glory', cursive;
+            font-size: 2vh;
+        }
     </style>
 </head>
 <body>
     <header>
         <label id="caption"><a href="https://www.github.com/nirgit" target="_blank">Nir Moav</a></label>
     </header>
-    <div id="container">
-    </div>
+    <div id="container"></div>
+
+    <footer>
+        Mandelbrot sets on Canvas
+    </footer>
 
     <script>
         var worker = new Worker('./mandlebrotww.js')
