@@ -34,11 +34,13 @@ const pixel = (x, y, color) => ({
     y
 })
 
+const randomSign = () => Math.random() > .5 ? 1 : -1
+
 function computeCanvas(startX, width, startY, height) {
     var map = Array(width).fill(1).map(() => Array(height));
-    var magnificationFactor = Math.random() * 5000;
-    var panX = Math.random() * 3;
-    var panY = Math.random() * 3;
+    var magnificationFactor = 200 + Math.random() * 1000;
+    var panX = randomSign() * Math.random() * 2;
+    var panY = randomSign() * Math.random() * 2;
     var colorRange = Math.floor(Math.random() * 180);
     for (var x = startX; x < startX + width; x++) {
         for (var y = startY; y < startY + height; y++) {
