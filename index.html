@@ -151,10 +151,14 @@
     </footer>
 
     <script>
-        var worker = new Worker('./mandlebrotww.js')
-        worker.onmessage = ({data}) => {
+        var worker1 = new Worker('./mandlebrotww.js')
+        var worker2 = new Worker('./mandlebrotww.js')
+        var workers = [worker1, worker2]
+
+        const handleWorkerData = ({data}) => {
             window.requestAnimationFrame(() => renderOnCanvas(data.i, data.map));
         }
+        workers.forEach(w => w.onmessage = handleWorkerData)
 
         var WIDTH = 0;
         var HEIGHT = 0;
@@ -168,7 +172,7 @@
 
         function redraw() {
             for (var i=0; i < ROWS * COLS; i++) {
-                worker.postMessage({i, 
+                workers[i % 2].postMessage({i, 
                     x: getRandomCoordinate(), 
                     y: getRandomCoordinate(), 
                     width: WIDTH, 
