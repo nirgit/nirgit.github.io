@@ -31,6 +31,7 @@
             height: 100%;
             width: 100%;
             background-color: black;
+            font-family: 'Give You Glory', cursive;
         }
 
         #bg {
@@ -76,12 +77,13 @@
             display: block;
             margin: auto;
             line-height: calc(var(--band-width) - 2px);
-            font-family: 'Give You Glory', cursive;
             font-size: 6vh;
             position: relative;
         }
 
         .ext-links {
+            display: flex;
+            justify-content: center;
             width: 360px;
             height: 100%;
             margin: auto;
@@ -90,9 +92,11 @@
         }
 
         .ext-item {
-            display: inline-block;
+            display: flex;
+            flex-direction: column;
             padding: 3vh 0;
             margin: 0 5px;
+            line-height: initial;
         }
 
         a {
@@ -107,13 +111,13 @@
             right: 0;
             color: white;
             padding: 20px;
-            font-family: 'Give You Glory', cursive;
             font-size: 2vh;
         }
 
         .icon {
             width: 64px;
             height: 64px;
+            margin-bottom: 5px;
         }
 
         /* desktop */
@@ -151,15 +155,19 @@
             <div class="ext-links">
                 <a class="ext-item" href="https://www.github.com/nirgit" target="_blank">
                     <img class="icon" src="./icons/github.svg" alt="GitHub Account">
+                    <span>Github</span>
                 </a>
                 <a class="ext-item" href="https://twitter.com/NirMoav" target="_blank">
                     <img class="icon" src="./icons/twitter.svg" alt="Twitter Account">
+                    <span>Twitter</span>
                 </a>
                 <a class="ext-item" href="https://tech-drum.blogspot.com/" target="_blank">
                     <img class="icon" src="./icons/blogger.svg" alt="Blog">
+                    <span>Blog</span>
                 </a>
                 <a class="ext-item" href="https://linkedin.com/in/nirmoav" target="_blank">
                     <img class="icon" src="./icons/linkedin.svg" alt="LinkedIn">
+                    <span>LinkedIn</span>
                 </a>
             </div>
         </div>
