@@ -221,12 +221,10 @@
 
         function renderOnCanvas(i, bitmap) {
             var ctx = get2dCtx(i)
-            for (var i=0; i < WIDTH; i++) {
-                for (var j=0; j < HEIGHT; j++) {
-                    var px = bitmap[i][j]
-                    ctx.fillStyle = px.color
-                    ctx.fillRect(px.x, px.y, 1, 1)
-                }
+            for (var i = 0; i < bitmap.length; i++) {
+                var px = bitmap[i]
+                ctx.fillStyle = px.color
+                ctx.fillRect(px.x, px.y, 1, 1)
             }
         }
 

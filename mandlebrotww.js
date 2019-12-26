@@ -37,7 +37,7 @@ const pixel = (x, y, color) => ({
 const randomSign = () => Math.random() > .5 ? 1 : -1
 
 function computeCanvas(startX, width, startY, height) {
-    var map = Array(width).fill(1).map(() => Array(height));
+    var map = []
     var magnificationFactor = 200 + Math.random() * 1000;
     var panX = randomSign() * Math.random() * 2;
     var panY = randomSign() * Math.random() * 2;
@@ -47,11 +47,14 @@ function computeCanvas(startX, width, startY, height) {
             var belongsToSet = checkIfBelongsToMandelbrotSet(
             x / magnificationFactor - panX,
             y / magnificationFactor - panY);
-            if (!belongsToSet) {
-                map[x - startX][y - startY] = pixel(x - startX, y - startY, '#000')
-            } else {
-                map[x - startX][y - startY] = pixel(x - startX, y - startY, 'hsl(' + (colorRange + belongsToSet * (colorRange / 100)) + ', 100%, ' + belongsToSet + '%)')
+            if (belongsToSet) {
+                var px = pixel(x - startX, y - startY, 'hsl(' + (colorRange + belongsToSet * (colorRange / 100)) + ', 100%, ' + belongsToSet + '%)')
+                map.push(px)
             }
+            //  else {
+                // not in the set... if it's "black", dont use it
+                // map[x - startX][y - startY] = pixel(x - startX, y - startY, '#000')
+            // }
         }
     }
     return map
