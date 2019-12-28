@@ -206,7 +206,8 @@
         var workers = [worker1, worker2]
 
         const handleWorkerData = ({data}) => {
-            window.requestAnimationFrame(() => renderOnCanvas(data.i, data.map));
+            var pData = JSON.parse(data)
+            window.requestAnimationFrame(() => renderOnCanvas(pData.i, pData.map));
         }
         workers.forEach(w => w.onmessage = handleWorkerData)
 
@@ -250,12 +251,21 @@
             return document.querySelector("#mandelbrot-" + i).getContext("2d");
         }
 
-        function renderOnCanvas(i, bitmap) {
-            var ctx = get2dCtx(i)
-            for (var i = 0; i < bitmap.length; i++) {
-                var px = bitmap[i]
-                ctx.fillStyle = px.color
-                ctx.fillRect(px.x, px.y, 1, 1)
+        function renderOnCanvas(ci, bitmap, startIndex = 0) {
+            var THRESHOLD = 10
+            var ctx = get2dCtx(ci)
+            var startTime = Date.now()
+            for (var i = startIndex; i < bitmap.length; i++) {
+                if ((Date.now() - startTime) > THRESHOLD) {
+                    window.setTimeout(() => {
+                        renderOnCanvas(ci, bitmap, i)
+                    }, THRESHOLD)
+                    break;
+                } else {
+                    var px = bitmap[i]
+                    ctx.fillStyle = px.color
+                    ctx.fillRect(px.x, px.y, 1, 1)
+                }
             }
         }
 

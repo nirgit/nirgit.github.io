@@ -62,6 +62,6 @@ function computeCanvas(startX, width, startY, height) {
 
 self.onmessage = ({data}) => {
     var canvasMap = computeCanvas(data.x, data.width, data.y, data.height)
-    self.postMessage({i: data.i, map: canvasMap})
+    self.postMessage(JSON.stringify({i: data.i, map: canvasMap}))
 }
 
