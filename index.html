@@ -233,6 +233,16 @@
             }
         }
 
+        function createCanvas(width, height, optionalId) {
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            if (optionalId) {
+                canvas.id = optionalId;
+            }
+            return canvas;
+        }
+
         function setup() {
             var width = WIDTH = Math.floor(window.document.body.clientWidth / COLS);
             var height = HEIGHT = Math.floor(window.document.body.clientHeight / ROWS);
@@ -240,24 +250,35 @@
             var container = document.querySelector("#bg")
             container.innerHTML = "";
             for (var i=0; i < ROWS * COLS; i++ ) {
-                var ci = document.createElement('canvas');
-                ci.id = 'mandelbrot-' + i;
-                ci.width = width;
-                ci.height = height;
+                const ci = createCanvas(width, height, 'mandelbrot-' + i);
+                ci.offscreen = createCanvas(width, height);
                 container.append(ci);
             }
         }
 
+        const getCanvasi = i => document.querySelector("#mandelbrot-" + i);
+
         function get2dCtx(i) {
-            return document.querySelector("#mandelbrot-" + i).getContext("2d");
+            return getCanvasi(i).getContext("2d");
+        }
+
+        function getOffscreen2dCtx(i) {
+            return getCanvasi(i).offscreen.getContext("2d");
+        }
+
+        function copyOffscreenToScreen(offscreenCtx, i) {
+            const canvas = getCanvasi(i);
+            const image = offscreenCtx.getImageData(0, 0, canvas.width, canvas.height);
+            canvas.getContext("2d").putImageData(image, 0, 0);
         }
 
         function renderOnCanvas(ci, bitmap, startIndex = 0) {
             var THRESHOLD = 10
-            var ctx = get2dCtx(ci)
+            var ctx = getOffscreen2dCtx(ci)
             var startTime = Date.now()
             for (var i = startIndex; i < bitmap.length; i++) {
                 if ((Date.now() - startTime) > THRESHOLD) {
+                    copyOffscreenToScreen(ctx, ci)
                     window.setTimeout(() => {
                         renderOnCanvas(ci, bitmap, i)
                     }, THRESHOLD)
@@ -268,6 +289,7 @@
                     ctx.fillRect(px.x, px.y, 1, 1)
                 }
             }
+            copyOffscreenToScreen(ctx, ci)
         }
 
         function debounce(func, t) {
