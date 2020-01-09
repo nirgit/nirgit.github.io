@@ -12,13 +12,14 @@
     <meta property="og:type" content="website">
     <meta name="google-site-verification" content="s7ZvFDrn6Fx_4L7zulY4k9OMaje7kEOIoxDDJ50QgIA" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <link href="GiveYouGlory-Regular.ttf" rel="font-family">
+    <link rel="preload" href="/mandlebrotww.js" as="script" importance="high">
     <title>Nir Moav</title>
 
     <style>
         @font-face {
             font-family: "Give You Glory";
             src: url("GiveYouGlory-Regular.ttf");
+            font-display: swap;
         }
 
         :root {
@@ -189,19 +190,19 @@
             <h1 class="caption">Nir Moav</h1>
             <div class="ext-links">
                 <a class="ext-item" href="https://www.github.com/nirgit" target="_blank">
-                    <img class="icon" src="./icons/github.svg" alt="GitHub Account">
+                    <img decoding="async" importance="low" class="icon" src="/icons/github.svg" alt="GitHub Account">
                     <span class="icon-text">Github</span>
                 </a>
                 <a class="ext-item" href="https://twitter.com/NirMoav" target="_blank">
-                    <img class="icon" src="./icons/twitter.svg" alt="Twitter Account">
+                    <img decoding="async" importance="low" class="icon" src="/icons/twitter.svg" alt="Twitter Account">
                     <span class="icon-text">Twitter</span class="icon-text">
                 </a>
                 <a class="ext-item" href="https://tech-drum.blogspot.com/" target="_blank">
-                    <img class="icon" src="./icons/blogger.svg" alt="Blog">
+                    <img decoding="async" importance="low" class="icon" src="/icons/blogger.svg" alt="Blog">
                     <span class="icon-text">Blog</span class="icon-text">
                 </a>
                 <a class="ext-item" href="https://linkedin.com/in/nirmoav" target="_blank">
-                    <img class="icon" src="./icons/linkedin.svg" alt="LinkedIn">
+                    <img decoding="async" importance="low" class="icon" src="/icons/linkedin.svg" alt="LinkedIn">
                     <span class="icon-text">LinkedIn</span class="icon-text">
                 </a>
             </div>
@@ -213,15 +214,12 @@
     </footer>
 
     <script>
-        var worker1 = new Worker('./mandlebrotww.js')
-        var worker2 = new Worker('./mandlebrotww.js')
-        var workers = [worker1, worker2]
+        var worker = new Worker('./mandlebrotww.js')
 
         const handleWorkerData = ({data}) => {
-            var pData = JSON.parse(data)
-            window.requestAnimationFrame(() => renderOnCanvas(pData.i, pData.map));
+            renderOnCanvas(data.i, data.map);
         }
-        workers.forEach(w => w.onmessage = handleWorkerData)
+        worker.onmessage = handleWorkerData
 
         var WIDTH = 0;
         var HEIGHT = 0;
@@ -235,7 +233,8 @@
 
         function redraw() {
             for (var i=0; i < ROWS * COLS; i++) {
-                workers[i % 2].postMessage({i,
+                clearCanvas(i)
+                worker.postMessage({i,
                     x: getRandomCoordinate(),
                     y: getRandomCoordinate(),
                     width: WIDTH,
@@ -267,6 +266,11 @@
             }
         }
 
+        function clearCanvas(i) {
+            get2dCtx(i).fillRect(0, 0, WIDTH, HEIGHT);
+            getOffscreen2dCtx(i).fillRect(0, 0, WIDTH, HEIGHT);
+        }
+
         const getCanvasi = i => document.querySelector("#mandelbrot-" + i);
 
         function get2dCtx(i) {
@@ -284,15 +288,15 @@
         }
 
         function renderOnCanvas(ci, bitmap, startIndex = 0) {
-            var THRESHOLD = 10
+            var THRESHOLD = 100
             var ctx = getOffscreen2dCtx(ci)
             var startTime = Date.now()
             for (var i = startIndex; i < bitmap.length; i++) {
                 if ((Date.now() - startTime) > THRESHOLD) {
                     copyOffscreenToScreen(ctx, ci)
-                    window.setTimeout(() => {
+                    window.requestAnimationFrame(() => {
                         renderOnCanvas(ci, bitmap, i)
-                    }, THRESHOLD)
+                    })
                     break;
                 } else {
                     var px = bitmap[i]

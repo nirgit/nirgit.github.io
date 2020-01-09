@@ -1,3 +1,4 @@
+const PX_LIMIT_TO_FLUSH = 1500
 
 // Z = C*C + C // C is the complex number
 // Z' = Z * Z + C // Z is the previous result and C is the same complex number
@@ -36,12 +37,12 @@ const pixel = (x, y, color) => ({
 
 const randomSign = () => Math.random() > .5 ? 1 : -1
 
-function computeCanvas(startX, width, startY, height) {
-    var map = []
+function computeCanvas({i, x: startX, width, y: startY, height}) {
     var magnificationFactor = 200 + Math.random() * 1000;
     var panX = randomSign() * Math.random() * 2;
     var panY = randomSign() * Math.random() * 2;
     var colorRange = Math.floor(Math.random() * 180);
+    var map = []
     for (var x = startX; x < startX + width; x++) {
         for (var y = startY; y < startY + height; y++) {
             var belongsToSet = checkIfBelongsToMandelbrotSet(
@@ -56,12 +57,21 @@ function computeCanvas(startX, width, startY, height) {
                 // map[x - startX][y - startY] = pixel(x - startX, y - startY, '#000')
             // }
         }
+        if (map.length >= PX_LIMIT_TO_FLUSH) {
+            flush(i, map)
+            map = []
+        }
     }
-    return map
+    flush(i, map)
+}
+
+function flush(i, map) {
+    if (map && map.length > 0) {
+       self.postMessage({i, map})
+    }
 }
 
 self.onmessage = ({data}) => {
-    var canvasMap = computeCanvas(data.x, data.width, data.y, data.height)
-    self.postMessage(JSON.stringify({i: data.i, map: canvasMap}))
+    computeCanvas(data)
 }
 
