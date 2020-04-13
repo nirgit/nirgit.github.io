@@ -216,25 +216,32 @@
     <script>
         var worker = new Worker('./mandlebrotww.js')
 
-        const handleWorkerData = ({data}) => {
-            renderOnCanvas(data.i, data.map);
+        worker.onmessage = ({data}) => {
+            if (data.type === 'ready') {
+                pullNextCanvasMap()
+            } else {
+                renderOnCanvas(data.i, data.map);
+            }
         }
-        worker.onmessage = handleWorkerData
 
         var WIDTH = 0;
         var HEIGHT = 0;
 
         var ROWS = 3;
         var COLS = 4;
-
+        
         function getRandomCoordinate() {
             return Math.floor((Math.random() > .5 ? 1 : -1) * Math.random() * 100);
         }
 
         function redraw() {
-            for (var i=0; i < ROWS * COLS; i++) {
+            const total = ROWS * COLS
+            for (var i=0; i < total; i++) {
                 clearCanvas(i)
-                worker.postMessage({i,
+                worker.postMessage({
+                    type: 'process',
+                    total,
+                    i,
                     x: getRandomCoordinate(),
                     y: getRandomCoordinate(),
                     width: WIDTH,
@@ -267,8 +274,8 @@
         }
 
         function clearCanvas(i) {
-            get2dCtx(i).fillRect(0, 0, WIDTH, HEIGHT);
-            getOffscreen2dCtx(i).fillRect(0, 0, WIDTH, HEIGHT);
+            get2dCtx(i).clearRect(0, 0, WIDTH, HEIGHT);
+            getOffscreen2dCtx(i).clearRect(0, 0, WIDTH, HEIGHT);
         }
 
         const getCanvasi = i => document.querySelector("#mandelbrot-" + i);
@@ -287,24 +294,34 @@
             canvas.getContext("2d").putImageData(image, 0, 0);
         }
 
+        function pullNextCanvasMap() {
+            window.setTimeout(() => {
+                worker.postMessage({type: "pull"})
+            }, 300)
+        }
+
         function renderOnCanvas(ci, bitmap, startIndex = 0) {
-            var THRESHOLD = 100
+            var THRESHOLD = 20
             var ctx = getOffscreen2dCtx(ci)
             var startTime = Date.now()
+            var isDone = false
             for (var i = startIndex; i < bitmap.length; i++) {
                 if ((Date.now() - startTime) > THRESHOLD) {
-                    copyOffscreenToScreen(ctx, ci)
-                    window.requestAnimationFrame(() => {
+                    window.setTimeout(() => {
                         renderOnCanvas(ci, bitmap, i)
-                    })
+                    }, THRESHOLD)
                     break;
                 } else {
                     var px = bitmap[i]
                     ctx.fillStyle = px.color
                     ctx.fillRect(px.x, px.y, 1, 1)
                 }
+                isDone = (i+1 === bitmap.length)
             }
             copyOffscreenToScreen(ctx, ci)
+            if (isDone) {
+                pullNextCanvasMap()
+            }
         }
 
         function debounce(func, t) {

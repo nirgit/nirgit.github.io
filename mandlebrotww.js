@@ -1,5 +1,7 @@
 const PX_LIMIT_TO_FLUSH = 1500
 
+const queue = []
+
 // Z = C*C + C // C is the complex number
 // Z' = Z * Z + C // Z is the previous result and C is the same complex number
 // Z'' = Z' * Z' + C // and so on.... keep repeating this calculation. check if Z'' after 10-20 calculations is smaller than a number like 5
@@ -37,7 +39,7 @@ const pixel = (x, y, color) => ({
 
 const randomSign = () => Math.random() > .5 ? 1 : -1
 
-function computeCanvas({i, x: startX, width, y: startY, height}) {
+function computeCanvas({i, total, x: startX, width, y: startY, height}) {
     var magnificationFactor = 200 + Math.random() * 1000;
     var panX = randomSign() * Math.random() * 2;
     var panY = randomSign() * Math.random() * 2;
@@ -57,21 +59,34 @@ function computeCanvas({i, x: startX, width, y: startY, height}) {
                 // map[x - startX][y - startY] = pixel(x - startX, y - startY, '#000')
             // }
         }
-        if (map.length >= PX_LIMIT_TO_FLUSH) {
-            flush(i, map)
-            map = []
-        }
     }
-    flush(i, map)
+    flush(i, total, map)
 }
 
-function flush(i, map) {
+function flush(i, total, map) {
     if (map && map.length > 0) {
-       self.postMessage({i, map})
+        queue.push({i, map})
+    }
+    if (i === total - 1) {
+        sendReady()
+    }
+}
+
+function sendReady() {
+    self.postMessage({type: "ready"})
+}
+
+function sendData() {
+    if (queue.length > 0) {
+        self.postMessage(queue.shift())
     }
 }
 
 self.onmessage = ({data}) => {
-    computeCanvas(data)
+    if (data.type === "process") {
+        computeCanvas(data)
+    } else if (data.type === "pull") {
+        sendData();
+    }
 }
 
