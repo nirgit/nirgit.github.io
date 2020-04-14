@@ -51,6 +51,12 @@
             margin: auto;
             box-sizing: border-box;
             border: rgba(255, 0, 255, 0.4) dashed 1px;
+            opacity: 0.3;
+        }
+
+        .canvas-drawn {
+            opacity: 1;
+            transition: .4s ease all;
         }
 
         header {
@@ -274,6 +280,7 @@
         }
 
         function clearCanvas(i) {
+            setCanvasDrawn(i, false)
             get2dCtx(i).clearRect(0, 0, WIDTH, HEIGHT);
             getOffscreen2dCtx(i).clearRect(0, 0, WIDTH, HEIGHT);
         }
@@ -300,6 +307,15 @@
             }, 300)
         }
 
+        function setCanvasDrawn(canvasIdx, isDrawn) {
+            const canvas = getCanvasi(canvasIdx)
+            if (isDrawn) {
+                canvas.classList.add('canvas-drawn')
+            } else {
+                canvas.classList.remove('canvas-drawn')
+            }
+        }
+
         function renderOnCanvas(ci, bitmap, startIndex = 0) {
             var THRESHOLD = 20
             var ctx = getOffscreen2dCtx(ci)
@@ -320,6 +336,7 @@
             }
             copyOffscreenToScreen(ctx, ci)
             if (isDone) {
+                setCanvasDrawn(ci, true);
                 pullNextCanvasMap()
             }
         }
