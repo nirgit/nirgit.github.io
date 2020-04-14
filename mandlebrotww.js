@@ -68,6 +68,7 @@ function flush(i, total, map) {
         queue.push({i, map})
     }
     if (i === total - 1) {
+        queue.sort((a,b) => Math.random() > .5 ? 1 : -1)
         sendReady()
     }
 }
