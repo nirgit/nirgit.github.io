@@ -72,8 +72,29 @@
             border-right: none;
         }
 
+        .btn-background-color {
+            background-color: black;
+            opacity: 0;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            transition: all .3s ease;
+        }
+
+        .btn-background {
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            opacity: 0;
+            transition: all .3s ease;
+        }
+
         .btn {
           background-color: rgba(0,0,0,0.1);
+          border-color: white;
           font-family: inherit;
           font-size: inherit;
           width: 100%;
@@ -81,6 +102,12 @@
           color: white;
           display: inline-block;
           padding: 20px;
+          transition: .4s ease all;
+        }
+
+        .btn:hover {
+            border-color: gold;
+            cursor: pointer;
         }
 
         .contents {
@@ -237,7 +264,10 @@
     </header>
 
     <footer>
-        <button class="btn" onClick="redraw()">Mandelbrot sets on Canvas</button>
+        <div id=btnBg class="btn-background-color">
+            <canvas id='btnBgCanvas' class="btn-background"></canvas>
+        </div>
+        <button id='btn' class="btn" onClick="redraw()">Mandelbrot sets on Canvas</button>
     </footer>
 
     <script>
@@ -247,6 +277,10 @@
             if (data.type === 'ready') {
                 pullNextCanvasMap()
             } else {
+                if (data.i === 'btnBg') {
+                    paintCanvasOnButton(data)
+                    return
+                }
                 renderOnCanvas(data.i, data.map);
             }
         }
@@ -288,6 +322,7 @@
         }
 
         function setup() {
+            addHoverEffectToButton();
             var width = WIDTH = Math.floor(window.document.body.clientWidth / COLS);
             var height = HEIGHT = Math.floor(window.document.body.clientHeight / ROWS);
 
@@ -370,6 +405,51 @@
             }
         }
 
+        const once = f => {
+            let isExecuted = false;
+            return function() {
+                if (isExecuted) return
+                isExecuted = true
+                return f.apply(null, arguments)
+            }
+        }
+
+        addHoverEffectToButton = once(() => {
+            const btn = document.getElementById('btn');
+            const btnBg = document.getElementById('btnBg')
+            const btnBgCanvas = document.getElementById('btnBgCanvas')
+
+            btn.addEventListener('mouseenter', () => {
+                worker.postMessage({
+                    type: 'process',
+                    total: 1,
+                    i: 'btnBg', 
+                    x: getRandomCoordinate(),
+                    y: getRandomCoordinate(),
+                    width: btnBgCanvas.offsetWidth * 1.25,
+                    height: btnBgCanvas.offsetHeight * 2,
+                    immediate: true
+                })
+            })
+
+            btn.addEventListener('mouseleave', () => {
+                btnBg.style.opacity = 0;
+                btnBgCanvas.style.opacity = 0;
+            })
+        })
+
+        const paintCanvasOnButton = (data) => {
+            const ctx = btnBgCanvas.getContext('2d')
+            const bitmap = data.map;
+            for (var i = 0; i < bitmap.length; i++) {
+                var px = bitmap[i]
+                ctx.fillStyle = px.color
+                ctx.fillRect(px.x, px.y, 1, 1)
+            }
+            btnBgCanvas.style.opacity = 0.6;
+            btnBg.style.opacity = 1;
+        }
+        
         setup();
         redraw();
         window.addEventListener('resize', debounce(() => {

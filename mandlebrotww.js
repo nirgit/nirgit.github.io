@@ -39,7 +39,7 @@ const pixel = (x, y, color) => ({
 
 const randomSign = () => Math.random() > .5 ? 1 : -1
 
-function computeCanvas({i, total, x: startX, width, y: startY, height}) {
+function computeCanvas({i, total, x: startX, width, y: startY, height, immediate}) {
     var magnificationFactor = 200 + Math.random() * 1000;
     var panX = randomSign() * Math.random() * 2;
     var panY = randomSign() * Math.random() * 2;
@@ -60,10 +60,14 @@ function computeCanvas({i, total, x: startX, width, y: startY, height}) {
             // }
         }
     }
-    flush(i, total, map)
+    flush(i, total, map, immediate)
 }
 
-function flush(i, total, map) {
+function flush(i, total, map, immediate) {
+    if (immediate) {
+        self.postMessage({i, map})
+        return
+    }
     if (map && map.length > 0) {
         queue.push({i, map})
     }
@@ -73,8 +77,8 @@ function flush(i, total, map) {
     }
 }
 
-function sendReady() {
-    self.postMessage({type: "ready"})
+function sendReady(i) {
+    self.postMessage({type: "ready", id: i})
 }
 
 function sendData() {
